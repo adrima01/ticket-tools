@@ -5,12 +5,12 @@
 URLLIST=""
 multi="False"
 
-take_screenshot () {
+take_screenshot () { #where is take_screenshot called?
     if [ -z "$1" ]
     then
         exit 17 
     else
-        URL="$1"
+        URL="$1" #path to the screenshot or website to be screenshot?
         URL="`echo $URL|sed -e 's/&/\&/g'`"
     fi
     if [ -z "$2" ] 
@@ -27,7 +27,7 @@ take_screenshot () {
     fi
     SCREENSHOT=`/usr/local/bin/faup -f host "$URL"`
     echo "$SCREENSHOT"
-    export URL; ssh ${SCREENSHOT_IDENTITY} ${SCREENSHOT_QUERY_USER}@${SCREENSHOT_SERVER} "$URL"
+    export URL; ssh ${SCREENSHOT_IDENTITY} ${SCREENSHOT_QUERY_USER}@${SCREENSHOT_SERVER} "$URL" #are defined in inc_external.conf-example??
     if [ $FETCH -eq 1 ]
     then
         sleep 2
@@ -47,14 +47,14 @@ show_actions () {
     echo "Reported URL: $URL"
     while read reps
     do
-        URL="`echo $URL | sed -e \"s/$reps/someone\@taggingserver\.com/g\"`"
+        URL="`echo $URL | sed -e \"s/$reps/someone\@taggingserver\.com/g\"`" #why?!
     done < get-reports.replacements-email
     while read reps
     do
         URL="`echo $URL | sed -e \"s/$reps/$REPLACED_DOMAIN/g\"`"
     done < get-reports.replacements
     echo "Sanitized URL: $URL"
-    URL_RF=`fang "$URL"`
+    URL_RF=`fang "$URL"`  #$URL = fang $URL wouldn't be easier? why the checking?
     if [[ ! $URL == $URL_RF ]]
     then
       URL=$URL_RF
@@ -132,7 +132,7 @@ show_actions () {
         ;;
     esac  
 }
-
+#start of the program
 if [[ -z "$1" ]]
 then
     echo "Usage: $0 [report-type|ticket-id]"
@@ -142,7 +142,7 @@ then
 fi
 
 re='^[0-9]+$'
-if [[ "$1" =~ $re ]]
+if [[ "$1" =~ $re ]] #regex auf $1 anwenden
 then
   multi="True"
 fi
@@ -174,7 +174,7 @@ then
     echo "Move crashfile"
     mv online-valid.json online-valid.json-crashed
   fi
-  /usr/bin/wget -4 $PHISHTANK_URL
+  /usr/bin/wget -4 $PHISHTANK_URL ipv4
   if [ ! -f online-valid.json ]
   then
     echo "Couldn't fetch phishtank file. Please check the last output"
@@ -372,20 +372,21 @@ do
             URL="invalid.tld"
             #exit 1
         fi 
-	DOMAIN=`faup -f domain "$URL"`
-	echo $DOMAIN
-	if [[ -z "$DOMAIN" ]] 
-	then
-	    DOMAIN="invalid domain"
-    	else
-	    if [[ `grep $DOMAIN spambee-ignorelist.inc` ]]
+        DOMAIN=`faup -f domain "$URL"`
+        echo $DOMAIN
+        if [[ -z "$DOMAIN" ]]
+        then
+            DOMAIN="invalid domain"
+        else
+            if [[ `grep $DOMAIN spambee-ignorelist.inc` ]]
             then
-	        $RT_BIN resolve $tn
+                $RT_BIN resolve $tn
             fi
-	fi
-        show_actions $URL 
-    else
-        URLS=`$RT_BIN show $tn |egrep -o "h[txX][txX]ps?://[^ ]+"`
+        fi
+        show_actions $URL
+
+    else # multi==true
+        URLS=`$RT_BIN show $tn | egrep -o "h[txX][txX]ps?://[^ ]+"`
         for URL in $URLS
         do
             echo $URL
@@ -394,9 +395,9 @@ do
                 echo "We should have a URL, but there is none. Something is wrong."
                 URL="invalid.tld"
                 #exit 1
-            fi 
-            #./rt show $tn 
-            show_actions $URL 
+            fi
+            #./rt show $tn
+            show_actions $URL
         done
     fi
     let i=i+1
