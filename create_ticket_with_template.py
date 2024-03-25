@@ -131,25 +131,40 @@ if onlinecheck == 1:
     if not online:
         print("Resource %s is offline (size: %s)" % (url, size))
         sys.exit(1)
-"""my_pyurlabuse = PyURLAbuse()
+"""
+my_pyurlabuse = PyURLAbuse()
 print("Querying URLAbuse:")
 response = my_pyurlabuse.run_query(url, with_digest=True)
 time.sleep(5)
-response = my_pyurlabuse.run_query(url, with_digest=True)"""
+response = my_pyurlabuse.run_query(url, with_digest=True)
+"""
 
 my_pylookyloo = Lookyloo()
 print("Querying Lookyloo:")
-if my_pylookyloo.is_up():
+if my_pylookyloo.is_up:
     uuid = my_pylookyloo.submit(url=url)
-    while my_pylookyloo.get_status != 1:
+    while my_pylookyloo.get_status(uuid)['status_code'] != 1:
         time.sleep(1)
 else:
     print("Lookyloo is not running")
     #sys.exit(1)
 response = my_pylookyloo.get_takedown_information(uuid)
+"""
+redirects = 'Redirects:\n'
+emails = 'Emails:\n'
+asns = 'Asn:\n'
+for x in response:
+    redirects += x['hostname'] + '\n'
+    emails += x['hostname'] + ': '
+    for email in x['all_emails']:
+        emails += email + '\n'
+    asns += x['hostname'] + ': '
+    for asn in x['asns']:
+        asns += asn + '\n'
+"""
     
 emails = ",".join([email.strip('.') for email in response['digest'][1]])
-asns = response['digest'][2] #asns response[0]['asns']
+asns = response['digest'][2]
 
 text = ioc_fanger.defang(response['digest'][0])
 d = {'details': text}
