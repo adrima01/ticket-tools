@@ -114,6 +114,23 @@ def open_tickets_for_url(url):
     #return res
     return False
 
+def capture_exists(my_pylookyloo, id):
+    import re
+    #import base64
+    """
+    LOOKYLOO=`$RT_BIN show $tn | egrep -o 'h[txX][txX]ps?://[^ :"]+'| grep 'lookyloo.circl.lu' | head -n 1`
+            if [ ! -z $LOOKYLOO ]
+            then
+    """
+    output = str(tracker.get_ticket(id))
+    #output = base64.b64decode(tracker.get_attachment(id)["Content"]).decode()
+    #output = subprocess.check_output([rt_bin, "show", tn]).decode("utf-8")
+    capture_url = re.findall(r'h[txX][txX]ps?://[^ :"]+lookyloo.circl.lu[^ :"]+', output)
+    uuid = capture_url
+    if my_pylookyloo.get_status(uuid)['status_code'] == -1:
+        uuid = -1
+    return uuid
+
 print("Checking URL: %s" % url)
 
 if onlinecheck == 2:
@@ -139,10 +156,13 @@ time.sleep(5)
 response = my_pyurlabuse.run_query(url, with_digest=True)
 """
 
+
 my_pylookyloo = Lookyloo()
 print("Querying Lookyloo:")
 if my_pylookyloo.is_up:
-    uuid = my_pylookyloo.submit(url=url)
+    uuid = capture_exists(my_pylookyloo, incident)
+    if uuid == -1:
+        uuid = my_pylookyloo.submit(url=url)
     while my_pylookyloo.get_status(uuid)['status_code'] != 1:
         time.sleep(1)
 else:
