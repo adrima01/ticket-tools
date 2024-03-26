@@ -125,11 +125,12 @@ def capture_exists(my_pylookyloo, id):
     output = str(tracker.get_ticket(id))
     #output = base64.b64decode(tracker.get_attachment(id)["Content"]).decode()
     #output = subprocess.check_output([rt_bin, "show", tn]).decode("utf-8")
-    capture_url = re.findall(r'h[txX][txX]ps?://lookyloo.circl.lu[^ :"]+', output)
-    uuid = capture_url[0].split('tree/',1)[1]
-    if my_pylookyloo.get_status(uuid)['status_code'] == -1:
-        uuid = -1
-    return uuid
+    capture_url = re.search(r'h[txX][txX]ps?://lookyloo.circl.lu/tree[^ :"]+', output)
+    if capture_url:
+        uuid = capture_url.group(0).split('tree/', 1)[1]
+        if my_pylookyloo.get_status(uuid)['status_code'] != -1:
+            return uuid
+    return -1
 
 print("Checking URL: %s" % url)
 
